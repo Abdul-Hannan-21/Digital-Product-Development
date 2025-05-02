@@ -1,4 +1,4 @@
-# MemoryTrain - Memory Support Web Application
+# MemoryTrain- Memory Support Web Application
 
 A full-stack web application designed to help users improve their memory through various training exercises, scheduling, and learning resources.
 
@@ -102,6 +102,8 @@ The project includes a GitHub Actions workflow that:
 2. Builds Docker images
 3. Pushes to a staging server on commits to the main branch
 
-## License
-
-MIT
+## Team Contribution
+Abdul Hannan
+Abdul Mannnan
+Muhammad Suleman
+Ayesha Hamid
