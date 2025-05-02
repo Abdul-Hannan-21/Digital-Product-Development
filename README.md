@@ -1,113 +1,122 @@
-<<<<<<< HEAD
-# Digital-Product-Development
-=======
-# MemoryTrain- Memory Support Web Application
+# 🧠 MemoryTrain – Memory Support Web Application
 
-A full-stack web application designed to help users improve their memory through various training exercises, scheduling, and learning resources.
+**MemoryTrain** is a full-stack web application designed to support early dementia patients and their caregivers through cognitive training, daily reminders, and helpful educational tools — all within a simple and accessible interface.
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
-/frontend - React.js application built with Vite
-/backend - FastAPI server
-/db - Database migrations and configuration
-docker-compose.yml - Orchestration for all services
-.env - Environment variables (not committed to version control)
+/frontend            - React.js app built with Vite  
+/backend             - FastAPI backend  
+/db                  - Alembic migrations and configuration  
+docker-compose.yml   - Orchestrates frontend, backend, and DB  
+.env                 - Environment variables (excluded from version control)  
 ```
 
-## Features
+---
 
-- **Home**: Landing page with app overview
-- **MemoryTraining**: Interactive memory exercises
-- **Calendar**: Schedule training sessions
-- **Chatbot**: AI assistant for memory improvement
-- **Learn**: Educational resources about memory techniques
-- **Progress**: Track memory improvement over time
+## ✨ Key Features
 
-## Technology Stack
+| Module            | Description                                                                 |
+|-------------------|-----------------------------------------------------------------------------|
+| 🏠 Home            | Minimal landing screen with simple navigation                              |
+| 🧠 MemoryTraining  | Interactive memory games (face-name match, word recall)                     |
+| 📅 Calendar        | Schedule training sessions, reminders for meds/events                       |
+| 💬 Chatbot         | Keyword-based assistant for basic questions like appointments/reminders     |
+| 📘 Learn           | Educational resources for caregivers to understand tools and techniques     |
+| 📊 Progress        | Track memory activity and routine engagement over time                      |
 
-- **Frontend**: React.js with Vite
-- **Backend**: FastAPI (Python)
-- **Database**: PostgreSQL with SQLAlchemy ORM
-- **Containerization**: Docker and Docker Compose
-- **CI/CD**: GitHub Actions
+---
 
-## Getting Started
+## 🛠 Technology Stack
 
-### Prerequisites
+| Layer         | Stack                                 |
+|---------------|----------------------------------------|
+| Frontend      | React.js with Vite                     |
+| Backend       | FastAPI (Python), SQLAlchemy ORM       |
+| Database      | PostgreSQL                             |
+| DevOps        | Docker, Docker Compose                 |
+| CI/CD         | GitHub Actions                         |
 
-- Docker and Docker Compose
+---
+
+## 🚀 Getting Started
+
+### 🔧 Prerequisites
+
+- Docker & Docker Compose installed  
 - Git
 
-### Running Locally
+### 🖥️ Local Development Setup
 
-1. Clone the repository
+1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd memorytrain-1.0
+   git clone https://github.com/Abdul-Hannan-21/Digital-Product-Development.git
+   cd Digital-Product-Development
    ```
 
-2. Create `.env` file in the root directory with the following variables:
-   ```
+2. **Create a `.env` file** in the root directory:
+
+   ```env
    # Database
    POSTGRES_USER=postgres
    POSTGRES_PASSWORD=postgres
    POSTGRES_DB=memorytrain
    POSTGRES_HOST=db
    POSTGRES_PORT=5432
-   
+
    # Backend
    BACKEND_PORT=8000
-   
+
    # Frontend
    FRONTEND_PORT=3000
    ```
 
-3. Start the application using Docker Compose
+3. **Start the application**
+
    ```bash
    docker-compose up -d
    ```
 
-4. Access the application:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000/docs
+4. **Access the application**
+   - Frontend UI: http://localhost:3000  
+   - Backend API Docs: http://localhost:8000/docs
 
-### Running in GitHub Codespaces
+---
 
-1. Open the repository in GitHub Codespaces
-2. Create the `.env` file as described above
-3. Run the following commands in the terminal:
+### ⚙️ Running in GitHub Codespaces
+
+1. Open the project in **GitHub Codespaces**  
+2. Create the `.env` file as shown above  
+3. Run:
+
    ```bash
    docker-compose up -d
    ```
 
-4. When Codespaces provides the port forwarding links, access the application through those links
+4. Use the **forwarded ports** provided by Codespaces to access the app
 
-## Development
+---
 
-### Running Migrations
 
-```bash
-docker-compose exec backend alembic upgrade head
-```
+---
 
-### Creating New Migrations
-
-```bash
-docker-compose exec backend alembic revision --autogenerate -m "description of changes"
-```
-
-## CI/CD Pipeline
+## 🔁 CI/CD Pipeline (GitHub Actions)
 
 The project includes a GitHub Actions workflow that:
 
-1. Runs tests for both frontend and backend
-2. Builds Docker images
-3. Pushes to a staging server on commits to the main branch
+- ✅ Runs frontend and backend tests  
+- 🐳 Builds Docker containers  
+- 🚀 Deploys to staging server on push to `main` branch
 
-## Team Contribution
-Abdul Hannan
-Abdul Mannnan
-Muhammad Suleman
-Ayesha Hamid
->>>>>>> origin/master
+---
+
+## 👨‍💻 Team Contributors
+
+- Abdul Hannan  
+- Abdul Mannnan  
+- Muhammad Salman Tariq 
+- Ayesha Hamid  
+
+---
