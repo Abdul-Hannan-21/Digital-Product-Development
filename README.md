@@ -122,6 +122,6 @@ Abdul Hannan
 
 Abdul Mannan
 
-Muhammad Suleman
+Muhammad Salman
 
 Ayesha Hamid
