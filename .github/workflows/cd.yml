@@ -115,6 +115,19 @@ jobs:
           echo "✅ Netlify secrets verified"
           echo "Site ID length: $(echo -n '${{ secrets.NETLIFY_SITE_ID }}' | wc -c)"
 
+      - name: Netlify authentication check
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          echo "🔍 Checking Netlify authentication and site access..."
+          echo "Checking auth status..."
+          npx netlify-cli status || true
+          echo ""
+          echo "Listing accessible sites..."
+          npx netlify-cli sites:list || true
+          echo ""
+          echo "✅ Authentication check complete"
+
       - name: Deploy to Netlify (Staging/Draft)
         id: deploy-staging
         env:
@@ -134,11 +147,10 @@ jobs:
           
           # Deploy using environment variables (CLI reads NETLIFY_AUTH_TOKEN from env)
           # Use --site flag to specify site directly (avoids linking step)
-          netlify deploy \
+          npx netlify-cli deploy \
             --dir=dist \
             --site="$NETLIFY_SITE_ID" \
-            --message="Deploy from ${{ github.ref_name }} - ${{ github.sha }}" \
-            --auth="$NETLIFY_AUTH_TOKEN"
+            --message="Deploy from ${{ github.ref_name }} - ${{ github.sha }}"
           
           echo "✅ Deployment to Netlify staging completed"
 
@@ -223,11 +235,10 @@ jobs:
           
           # Deploy using environment variables (CLI reads NETLIFY_AUTH_TOKEN from env)
           # Use --site flag to specify site directly (avoids linking step)
-          netlify deploy --prod \
+          npx netlify-cli deploy --prod \
             --dir=dist \
             --site="$NETLIFY_SITE_ID" \
-            --message="Production deploy from ${{ github.ref_name }} - ${{ github.sha }}" \
-            --auth="$NETLIFY_AUTH_TOKEN"
+            --message="Production deploy from ${{ github.ref_name }} - ${{ github.sha }}"
           
           echo "✅ Deployment to Netlify production completed"
 
