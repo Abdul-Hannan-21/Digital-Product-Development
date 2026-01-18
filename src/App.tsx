@@ -16,7 +16,7 @@ export default function App() {
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">M</span>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">MemoryMate</h2>
+          <h2 className="text-xl font-semibold text-gray-800">MemoryMate 2</h2>
         </div>
         <Authenticated>
           <div className="flex items-center gap-4">
