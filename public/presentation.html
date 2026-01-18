@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI/CD Pipeline Presentation - MemoryMate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            padding: 80px;
+            overflow-y: auto;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: block;
+            z-index: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h1 {
+            font-size: 4em;
+            color: #667eea;
+            margin-bottom: 30px;
+            border-bottom: 4px solid #764ba2;
+            padding-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 3em;
+            color: #667eea;
+            margin: 40px 0 25px 0;
+        }
+
+        h3 {
+            font-size: 2.2em;
+            color: #764ba2;
+            margin: 35px 0 20px 0;
+        }
+
+        h4 {
+            font-size: 1.6em;
+            color: #555;
+            margin: 25px 0 15px 0;
+        }
+
+        p, li {
+            font-size: 1.4em;
+            line-height: 2;
+            margin: 15px 0;
+        }
+
+        ul {
+            margin-left: 30px;
+            margin-top: 15px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .title-slide {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title-slide h1 {
+            font-size: 5.5em;
+            border: none;
+            margin-bottom: 60px;
+        }
+
+        .subtitle {
+            font-size: 1.8em;
+            color: #764ba2;
+            margin-top: 30px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 25px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            margin: 20px 0;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        .pipeline-diagram {
+            background: #f5f5f5;
+            padding: 35px;
+            border-radius: 12px;
+            margin: 25px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            font-size: 1em;
+            overflow-x: auto;
+            line-height: 1.8;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .feature-card h4 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .tool-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+
+        .tool-table th, .tool-table td {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+            font-size: 1.2em;
+        }
+
+        .tool-table th {
+            background: #667eea;
+            color: white;
+            font-size: 1.4em;
+        }
+
+        .tool-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            padding: 18px 40px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.3em;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.4);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.2em;
+            color: #667eea;
+            z-index: 1000;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .checkmark {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .arrow {
+            display: inline-block;
+            font-size: 1.5em;
+            margin: 0 10px;
+        }
+
+        .timing-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .key-point {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .url-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .url-link:hover {
+            text-decoration: underline;
+        }
+
+        .section-divider {
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            margin: 30px 0;
+            border-radius: 2px;
+        }
+
+        @media print {
+            .navigation, .slide-counter {
+                display: none;
+            }
+            .slide {
+                display: block !important;
+                page-break-after: always;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">25</span>
+    </div>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide">
+            <h1>CI/CD Pipeline Implementation</h1>
+            <h2>MemoryMate</h2>
+            <p class="subtitle">Digital Memory Companion</p>
+            <div style="margin-top: 60px;">
+                <p><strong>Course:</strong> Management and IT-Consulting in Health Service</p>
+                <p><strong>WS 25/26</strong></p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Project Overview -->
+        <div class="slide">
+            <h1>Project Overview</h1>
+            <div class="section-divider"></div>
+            <h2>MemoryMate</h2>
+            <p><strong>A Digital Memory Companion for Early-Stage Dementia Patients and Caregivers</strong></p>
+            
+            <div style="margin-top: 30px;">
+                <ul>
+                    <li><strong>Purpose:</strong> Support patients and caregivers with cognitive tools and daily structure</li>
+                    <li><strong>Problem:</strong> 55+ million people worldwide live with dementia (WHO, 2021)</li>
+                    <li><strong>Solution:</strong> Accessible web app combining reminders, games, chatbot, and caregiver dashboards</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Technology Stack -->
+        <div class="slide">
+            <h1>Technology Stack</h1>
+            <div class="section-divider"></div>
+            
+            <h3>Frontend</h3>
+            <ul>
+                <li><strong>React 19.0</strong> - Modern UI framework</li>
+                <li><strong>TypeScript</strong> - Type-safe JavaScript</li>
+                <li><strong>Vite 6.2</strong> - Fast build tool and dev server</li>
+                <li><strong>Tailwind CSS</strong> - Utility-first styling</li>
+            </ul>
+
+            <h3>Backend</h3>
+            <ul>
+                <li><strong>Convex</strong> - Real-time database, functions, and authentication</li>
+                <li><strong>Node.js 20</strong> - JavaScript runtime</li>
+            </ul>
+
+            <h3>Development Tools</h3>
+            <ul>
+                <li><strong>ESLint</strong> - Code quality and linting</li>
+                <li><strong>TypeScript Compiler</strong> - Static type checking</li>
+                <li><strong>Vitest</strong> - Unit testing framework</li>
+            </ul>
+        </div>
+
+        <!-- Slide 4: Key Features -->
+        <div class="slide">
+            <h1>Key Features</h1>
+            <div class="section-divider"></div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📅 Gentle Reminders</h4>
+                    <p>Daily/recurring tasks with calm schedule view</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🧠 Cognitive Games</h4>
+                    <p>Face-name recall, word association games</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💬 Chatbot Assistant</h4>
+                    <p>OpenAI-powered Q&A (e.g., "Did I take my meds?")</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡 Caregiver Dashboard</h4>
+                    <p>Monitor reminders, games, mood trends</p>
+                </div>
+            </div>
+
+            <div class="key-point" style="margin-top: 30px;">
+                <strong>Live App:</strong> <a href="https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app/" class="url-link" target="_blank">https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app/</a>
+            </div>
+        </div>
+
+        <!-- Slide 5: Pipeline Overview -->
+        <div class="slide">
+            <h1>Pipeline Overview</h1>
+            <div class="section-divider"></div>
+            <h3>Two Workflows Working Together</h3>
+            
+            <div class="pipeline-diagram">┌─────────────────────────────────────────────────────────┐
+│              Developer Pushes Code                       │
+│                  to GitHub                               │
+└────────────────┬────────────────────────────────────────┘
+                 │
+        ┌────────┴────────┐
+        │                 │
+   [CI Pipeline]    [CD Pipeline]
+   (All branches)    (main branch)
+        │                 │
+        ▼                 ▼
+   Quality Checks    Build & Deploy
+        │                 │
+        ▼                 ▼
+   Ready to Merge    Live Production</div>
+
+            <div class="key-point">
+                <strong>Key Point:</strong> CI ensures code quality on every push. CD deploys to production when code reaches <code>main</code>.
+            </div>
+        </div>
+
+        <!-- Slide 6: CI Stage 1 - Linting -->
+        <div class="slide">
+            <h1>CI: Stage 1 - Linting <span class="timing-badge">~30s</span></h1>
+            <div class="section-divider"></div>
+            <h3>ESLint Code Quality Check</h3>
+            
+            <p><strong>What happens:</strong></p>
+            <ul>
+                <li>Analyzes all <code>.ts</code> and <code>.tsx</code> files</li>
+                <li>Enforces code style and best practices</li>
+                <li>Checks React Hooks rules</li>
+            </ul>
+
+            <p><strong>Command:</strong> <code>npm run lint -- --max-warnings 0</code></p>
+
+            <div class="code-block">✓ No linting errors
+✗ 2 errors, 1 warning → Pipeline stops</div>
+
+            <div class="key-point">
+                <strong>Why this stage?</strong> Catches code quality issues before they reach production.
+            </div>
+        </div>
+
+        <!-- Slide 7: CI Stage 2 - Type Check -->
+        <div class="slide">
+            <h1>CI: Stage 2 - Type Check <span class="timing-badge">~1min</span></h1>
+            <div class="section-divider"></div>
+            <h3>TypeScript Type Safety</h3>
+            
+            <p><strong>What happens:</strong></p>
+            <ul>
+                <li>Validates types without generating files</li>
+                <li>Checks both frontend and Convex backend</li>
+                <li>Catches type mismatches, missing definitions</li>
+            </ul>
+
+            <div class="code-block">npm run type-check
+# Executes:
+tsc -p . --noEmit        # Frontend
+tsc -p convex --noEmit   # Backend</div>
+
+            <div class="key-point">
+                <strong>Why this stage?</strong> TypeScript prevents runtime errors by catching type issues at compile time.
+            </div>
+        </div>
+
+        <!-- Slide 8: CI Stage 3 - Build -->
+        <div class="slide">
+            <h1>CI: Stage 3 - Build <span class="timing-badge">~2-3min</span></h1>
+            <div class="section-divider"></div>
+            <h3>Building the Application</h3>
+            
+            <p><strong>What happens:</strong></p>
+            <ul>
+                <li>Compiles TypeScript to JavaScript</li>
+                <li>Bundles React components</li>
+                <li>Optimizes assets for production</li>
+                <li>Creates production-ready files in <code>dist/</code> directory</li>
+            </ul>
+
+            <div class="code-block">1. Build Convex Backend
+   npm run build:convex
+   → Validates backend functions and schema
+
+2. Build Frontend (Vite)
+   npm run build
+   → Creates optimized bundle in dist/</div>
+
+            <div class="key-point">
+                <strong>Prerequisites:</strong> <span class="checkmark">✓</span> Lint must pass | <span class="checkmark">✓</span> Type check must pass
+            </div>
+        </div>
+
+        <!-- Slide 9: CI Stage 4 - Tests -->
+        <div class="slide">
+            <h1>CI: Stage 4 - Tests <span class="timing-badge">~3s</span></h1>
+            <div class="section-divider"></div>
+            <h3>Running Test Suite</h3>
+            
+            <p><strong>Test Framework:</strong> Vitest 4.0</p>
+
+            <p><strong>What happens:</strong></p>
+            <ul>
+                <li>Runs unit tests for utility functions</li>
+                <li>Validates component logic</li>
+                <li>Generates test reports</li>
+            </ul>
+
+            <div class="code-block">it("should merge Tailwind classes", () => {
+  expect(cn("px-2", "px-4")).toBe("px-4");
+  // twMerge resolves conflicting utilities
+});</div>
+
+            <div class="key-point" style="background: #d4edda; border-color: #28a745;">
+                <strong>Results:</strong> <span class="checkmark">✓</span> 8 tests passed | Test Files: 1 passed | Duration: ~3 seconds
+            </div>
+        </div>
+
+        <!-- Slide 10: CI Pipeline Flow -->
+        <div class="slide">
+            <h1>CI Pipeline Flow Diagram</h1>
+            <div class="section-divider"></div>
+            
+            <div class="pipeline-diagram" style="font-size: 0.75em;">┌──────────────────────────────────────────────────────────┐
+│              PUSH TO ANY BRANCH / PR                      │
+└────────────────────────┬─────────────────────────────────┘
+                         │
+                         ▼
+         ┌───────────────────────────────┐
+         │  Stage 1: ESLint Lint         │
+         │  ⏱️  ~30 seconds              │
+         └───────────┬───────────────────┘
+                     │
+                     ▼
+         ┌───────────────────────────────┐
+         │  Stage 2: TypeScript Check    │
+         │  ⏱️  ~1 minute                │
+         └───────────┬───────────────────┘
+                     │
+                     ▼
+         ┌───────────────────────────────┐
+         │  Stage 3: Build Application   │
+         │  ⏱️  ~2-3 minutes             │
+         └───────────┬───────────────────┘
+                     │
+                     ▼
+         ┌───────────────────────────────┐
+         │  Stage 4: Run Tests           │
+         │  ⏱️  ~3 seconds               │
+         └───────────┬───────────────────┘
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+     ✅ PASS                ❌ FAIL
+                     
+                     
+Total CI time: ~4-5 minutes</div>
+        </div>
+
+        <!-- Slide 11: CD Overview -->
+        <div class="slide">
+            <h1>Continuous Deployment - Overview</h1>
+            <div class="section-divider"></div>
+            
+            <h3>Deployment Process</h3>
+            <p><strong>Trigger:</strong> Push to <code>main</code>, <code>master</code>, or <code>develop</code> branch</p>
+
+            <div class="key-point">
+                <p><strong>Deployment Strategy:</strong></p>
+                <ul>
+                    <li><strong>Platform:</strong> Netlify</li>
+                    <li><strong>Method:</strong> Git Integration (automatic)</li>
+                    <li><strong>Configuration:</strong> <code>netlify.toml</code></li>
+                </ul>
+            </div>
+
+            <h3>How it works:</h3>
+            <ol style="margin-left: 30px; margin-top: 15px;">
+                <li>Code pushed to <code>main</code> branch</li>
+                <li>GitHub Actions verifies build (CD workflow)</li>
+                <li>Netlify detects push automatically</li>
+                <li>Netlify builds and deploys to production</li>
+                <li>Live site updated: <a href="https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app/" class="url-link" target="_blank">696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app</a></li>
+            </ol>
+        </div>
+
+        <!-- Slide 12: CD Build & Deploy -->
+        <div class="slide">
+            <h1>CD: Build & Deploy</h1>
+            <div class="section-divider"></div>
+            
+            <h3>Stage 1: Build Verification (GitHub Actions)</h3>
+            <div class="code-block">1. Install dependencies (npm ci)
+2. Build Convex backend
+3. Build frontend for production
+4. Verify build succeeds</div>
+
+            <h3>Stage 2: Netlify Deployment (Automatic)</h3>
+            <div class="code-block">1. Netlify detects Git push
+2. Runs build command: npm install && npm run build
+3. Publishes dist/ directory
+4. Deploys to CDN
+5. Updates production site</div>
+
+            <div class="key-point">
+                <strong>Deployment time:</strong> ~3-4 minutes total
+            </div>
+        </div>
+
+        <!-- Slide 13: Deployment Flow -->
+        <div class="slide">
+            <h1>Deployment Flow Diagram</h1>
+            <div class="section-divider"></div>
+            
+            <div class="pipeline-diagram" style="font-size: 0.75em;">┌─────────────────────────────────────────────────────────────┐
+│        PUSH TO main → CD Pipeline Triggers                  │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+         ┌──────────────────────────────────┐
+         │  Stage 1: Build Verification     │
+         │  (GitHub Actions)                │
+         │  ⏱️  ~2-3 minutes                │
+         └────────────┬─────────────────────┘
+                      │
+                      ▼
+         ┌──────────────────────────────────┐
+         │  Stage 2: Netlify Deployment     │
+         │  (Automatic via Git integration) │
+         │  ⏱️  ~1-2 minutes                │
+         └────────────┬─────────────────────┘
+                      │
+                      ▼
+         ┌──────────────────────────────────┐
+         │  Production Deployment Complete  │
+         │  ✅ https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app │
+         └──────────────────────────────────┘</div>
+
+            <div class="key-point">
+                <strong>Key Point:</strong> Deployment is <span class="highlight">automatic</span> - no manual steps required after push to <code>main</code>.
+            </div>
+        </div>
+
+        <!-- Slide 14: Deployment Details -->
+        <div class="slide">
+            <h1>Deployment Details</h1>
+            <div class="section-divider"></div>
+            
+            <h3>Where is it deployed?</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Production Environment</h4>
+                    <p><strong>URL:</strong> <a href="https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app/" class="url-link" style="color: white;" target="_blank">696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app</a></p>
+                    <p><strong>Platform:</strong> Netlify (Global CDN)</p>
+                    <p><strong>Branch:</strong> <code>main</code> branch</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Deployment Method</h4>
+                    <p><span class="checkmark">✓</span> <strong>Automatic</strong> - Push to <code>main</code> triggers deployment</p>
+                    <p><span style="color: #ff6b6b;">✗</span> <strong>Manual</strong> - Not currently configured</p>
+                </div>
+            </div>
+
+            <div class="key-point" style="margin-top: 20px;">
+                <strong>Note:</strong> Netlify can create deploy previews for pull requests (staging-like environments).
+            </div>
+        </div>
+
+        <!-- Slide 15: Error Handling -->
+        <div class="slide">
+            <h1>Error Handling & Feedback Loops</h1>
+            <div class="section-divider"></div>
+            
+            <h3>What happens when a build fails?</h3>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Pipeline Stopping</h4>
+                    <p>CI/CD pipeline stops at the failing stage. No further stages execute. Deployment is blocked.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Error Reporting</h4>
+                    <p>GitHub Actions logs show detailed errors with file paths and line numbers. Workflow summary shows which job failed.</p>
+                </div>
+            </div>
+
+            <h3>Example failure scenario:</h3>
+            <div class="code-block">Stage 2: Type Check fails
+  → Error: Type 'string' is not assignable to type 'number'
+  → File: src/components/Chatbot.tsx:45
+  → Pipeline stops
+  → Deployment blocked
+  → Developer gets notification
+  → Fix locally and push again</div>
+        </div>
+
+        <!-- Slide 16: Notifications & Logs -->
+        <div class="slide">
+            <h1>Notifications & Logs</h1>
+            <div class="section-divider"></div>
+            
+            <h3>Feedback Mechanisms</h3>
+
+            <h4>1. GitHub Actions Notifications</h4>
+            <ul>
+                <li>Email notifications on workflow status changes</li>
+                <li>Real-time updates in GitHub UI</li>
+                <li>Status badges available for README</li>
+            </ul>
+
+            <h4>2. Workflow Summary Reports</h4>
+            <div class="code-block">### CI Pipeline Status: success
+- Commit: abc123def456
+- Branch: main
+- Tests: 8 passed
+- Duration: 4 minutes 32 seconds</div>
+
+            <h4>3. Pull Request Protection</h4>
+            <ul>
+                <li>CI status shown in PR checks</li>
+                <li>Merge blocked if CI fails</li>
+                <li>Direct link to failed workflow for debugging</li>
+            </ul>
+
+            <div class="key-point">
+                <strong>Time to feedback:</strong> ~4-5 minutes (full CI pipeline)
+            </div>
+        </div>
+
+        <!-- Slide 17: Tools - GitHub Actions -->
+        <div class="slide">
+            <h1>Toolset: CI/CD Orchestration</h1>
+            <div class="section-divider"></div>
+            
+            <h2>GitHub Actions</h2>
+            <p><strong>Role:</strong> Primary CI/CD orchestration platform</p>
+
+            <h3>Why we chose it:</h3>
+            <ul>
+                <li><span class="checkmark">✓</span> <strong>Native GitHub integration</strong> - Works seamlessly with our repository</li>
+                <li><span class="checkmark">✓</span> <strong>Free for public repositories</strong> - No cost for our project</li>
+                <li><span class="checkmark">✓</span> <strong>Easy configuration</strong> - YAML files, no complex setup</li>
+                <li><span class="checkmark">✓</span> <strong>Large ecosystem</strong> - Pre-built actions available</li>
+                <li><span class="checkmark">✓</span> <strong>Real-time feedback</strong> - Live logs and status updates</li>
+            </ul>
+
+            <div class="key-point">
+                <strong>Usage:</strong> Workflow files: <code>.github/workflows/ci.yml</code>, <code>.github/workflows/cd.yml</code>
+            </div>
+        </div>
+
+        <!-- Slide 18: Tools - Code Quality -->
+        <div class="slide">
+            <h1>Toolset: Code Quality</h1>
+            <div class="section-divider"></div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>ESLint 9.21.0</h4>
+                    <p><strong>Role:</strong> Code quality checking and linting</p>
+                    <p><strong>Why:</strong> Industry standard for JavaScript/TypeScript. Extensive rule sets. Customizable.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>TypeScript Compiler</h4>
+                    <p><strong>Role:</strong> Static type checking</p>
+                    <p><strong>Why:</strong> Built-in tool. Catches errors early before runtime.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Tools - Build Tools -->
+        <div class="slide">
+            <h1>Toolset: Build Tools</h1>
+            <div class="section-divider"></div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Vite 6.2</h4>
+                    <p><strong>Role:</strong> Frontend build tool</p>
+                    <p><strong>Why:</strong> Fast dev server. Optimized production builds. Native TypeScript support.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Convex CLI</h4>
+                    <p><strong>Role:</strong> Backend build and deployment</p>
+                    <p><strong>Why:</strong> Official tool. Validates backend functions and schema.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>npm</h4>
+                    <p><strong>Role:</strong> Package management</p>
+                    <p><strong>Why:</strong> Default for Node.js. Reproducible builds with package-lock.json.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: Tools - Testing -->
+        <div class="slide">
+            <h1>Toolset: Testing</h1>
+            <div class="section-divider"></div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Vitest 4.0</h4>
+                    <p><strong>Role:</strong> Unit testing framework</p>
+                    <p><strong>Why:</strong> Vite-native. Fast execution. TypeScript support. Watch mode.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>React Testing Library</h4>
+                    <p><strong>Role:</strong> Component testing utilities</p>
+                    <p><strong>Why:</strong> Tests user behavior. Simple API. Community standard.</p>
+                </div>
+            </div>
+
+            <div class="key-point" style="margin-top: 30px;">
+                <strong>Configuration:</strong> Test files: <code>*.test.ts</code> | Command: <code>npm test</code> | Config: <code>vite.config.ts</code>
+            </div>
+        </div>
+
+        <!-- Slide 21: Tools - Deployment -->
+        <div class="slide">
+            <h1>Toolset: Deployment</h1>
+            <div class="section-divider"></div>
+            
+            <h2>Netlify</h2>
+            <p><strong>Role:</strong> Hosting and deployment platform</p>
+
+            <h3>Why we chose it:</h3>
+            <ul>
+                <li><span class="checkmark">✓</span> <strong>Free tier</strong> - Suitable for small/medium projects</li>
+                <li><span class="checkmark">✓</span> <strong>Git integration</strong> - Automatic deployments from GitHub</li>
+                <li><span class="checkmark">✓</span> <strong>Easy configuration</strong> - Simple <code>netlify.toml</code> file</li>
+                <li><span class="checkmark">✓</span> <strong>Global CDN</strong> - Fast content delivery worldwide</li>
+                <li><span class="checkmark">✓</span> <strong>Deploy previews</strong> - Preview deployments for pull requests</li>
+                <li><span class="checkmark">✓</span> <strong>HTTPS included</strong> - SSL certificates automatically configured</li>
+            </ul>
+
+            <div class="key-point">
+                <strong>Production URL:</strong> <a href="https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app/" class="url-link" target="_blank">https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app/</a>
+            </div>
+        </div>
+
+        <!-- Slide 22: Toolset Summary -->
+        <div class="slide">
+            <h1>Toolset Summary</h1>
+            <div class="section-divider"></div>
+            
+            <table class="tool-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Tool</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Orchestration</strong></td>
+                        <td>GitHub Actions</td>
+                        <td>CI/CD pipeline orchestration</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Code Quality</strong></td>
+                        <td>ESLint</td>
+                        <td>Linting and code style</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Type Safety</strong></td>
+                        <td>TypeScript</td>
+                        <td>Static type checking</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Build (Frontend)</strong></td>
+                        <td>Vite</td>
+                        <td>Frontend bundling</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Build (Backend)</strong></td>
+                        <td>Convex CLI</td>
+                        <td>Backend validation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Testing</strong></td>
+                        <td>Vitest</td>
+                        <td>Unit testing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Testing</strong></td>
+                        <td>React Testing Library</td>
+                        <td>Component testing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Deployment</strong></td>
+                        <td>Netlify</td>
+                        <td>Hosting and CDN</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="key-point" style="margin-top: 20px;">
+                <strong>Why this stack?</strong> Modern, industry-standard tools. Free/open-source. Easy setup. Good integration.
+            </div>
+        </div>
+
+        <!-- Slide 23: Key Takeaways -->
+        <div class="slide">
+            <h1>Key Takeaways</h1>
+            <div class="section-divider"></div>
+            
+            <h2>Why we built CI/CD this way:</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>1. Automation</h4>
+                    <p>No manual deployment steps</p>
+                </div>
+                <div class="feature-card">
+                    <h4>2. Quality Gates</h4>
+                    <p>Lint, type-check, build, test before deployment</p>
+                </div>
+                <div class="feature-card">
+                    <h4>3. Fast Feedback</h4>
+                    <p>Know about issues in ~5 minutes</p>
+                </div>
+                <div class="feature-card">
+                    <h4>4. Safety</h4>
+                    <p>Automated checks prevent bugs reaching production</p>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 40px;">Results:</h2>
+            <ul style="font-size: 1.3em;">
+                <li><span class="checkmark">✓</span> <strong>Code quality</strong> - Consistent style and type safety</li>
+                <li><span class="checkmark">✓</span> <strong>Reliability</strong> - Tests ensure functionality</li>
+                <li><span class="checkmark">✓</span> <strong>Speed</strong> - Automated deployment saves time</li>
+                <li><span class="checkmark">✓</span> <strong>Confidence</strong> - Deploy with assurance that code works</li>
+            </ul>
+        </div>
+
+        <!-- Slide 24: Demo & Links -->
+        <div class="slide title-slide">
+            <h1>Ready for Questions</h1>
+            <div class="section-divider"></div>
+            
+            <h3>Live Demo Options:</h3>
+            <ul style="text-align: left; margin-top: 30px;">
+                <li>Show GitHub Actions workflow runs</li>
+                <li>Demonstrate test execution (<code>npm test</code>)</li>
+                <li>Show Netlify deployment dashboard</li>
+                <li>Display live production site</li>
+            </ul>
+
+            <div style="margin-top: 50px;">
+                <h3>Repository:</h3>
+                <p><a href="https://github.com/Abdul-Hannan-21/Digital-Product-Development" class="url-link" target="_blank" style="font-size: 1.3em;">GitHub Repository</a></p>
+
+                <h3 style="margin-top: 30px;">Live App:</h3>
+                <p><a href="https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app/" class="url-link" target="_blank" style="font-size: 1.3em;">696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app</a></p>
+            </div>
+        </div>
+
+        <!-- Slide 25: Thank You -->
+        <div class="slide title-slide">
+            <h1 style="font-size: 6em;">Thank You!</h1>
+            <div style="margin-top: 80px;">
+                <h2 style="color: #764ba2; font-size: 3em;">Questions?</h2>
+                <div style="margin-top: 60px; font-size: 1.6em;">
+                    <p><strong>Repository:</strong> <a href="https://github.com/Abdul-Hannan-21/Digital-Product-Development" class="url-link" target="_blank">GitHub</a></p>
+                    <p style="margin-top: 30px;"><strong>Live App:</strong> <a href="https://696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app/" class="url-link" target="_blank">696d3132a4208000081bd3bf--keen-trifle-8c918c.netlify.app</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            if (n >= totalSlides) {
+                currentSlide = 0;
+            } else if (n < 0) {
+                currentSlide = totalSlides - 1;
+            } else {
+                currentSlide = n;
+            }
+
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            // Update navigation buttons
+            document.getElementById('prev-btn').disabled = currentSlide === 0;
+            document.getElementById('next-btn').disabled = currentSlide === totalSlides - 1;
+
+            // Scroll to top of slide
+            slides[currentSlide].scrollTop = 0;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+                e.preventDefault();
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                changeSlide(-1);
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                showSlide(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                showSlide(totalSlides - 1);
+            }
+        });
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                changeSlide(1); // Swipe left = next
+            }
+            if (touchEndX > touchStartX + 50) {
+                changeSlide(-1); // Swipe right = previous
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
