@@ -1,4 +1,8 @@
-name: Continuous Delivery/Deployment
+name: Build Verification (CI)
+
+# Note: Deployment is handled automatically by Netlify's Git integration.
+# Netlify automatically deploys when code is pushed to main/connected branch.
+# This workflow verifies that the code builds successfully before deployment.
 
 on:
   push:
@@ -6,28 +10,22 @@ on:
       - main
       - master
       - develop
-  workflow_dispatch:  # Allows manual triggering
-    inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        type: choice
-        options:
-          - staging
-          - production
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
 
 # Cancel in-progress runs for the same workflow and branch
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.inputs.environment || 'staging' }}
-  cancel-in-progress: false  # Don't cancel deployments in progress
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  # Stage 1: Build and Package
-  build-and-package:
-    name: Build and Package
+  # Build Verification: Ensures code builds successfully before Netlify deploys
+  build-verification:
+    name: Build Verification
     runs-on: ubuntu-latest
-    outputs:
-      build-artifact: dist-build-${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,314 +49,18 @@ jobs:
           NODE_ENV: production
         continue-on-error: false
 
-      - name: Package build artifacts
-        run: |
-          tar -czf dist-${{ github.sha }}.tar.gz dist/
-          echo "Build packaged: dist-${{ github.sha }}.tar.gz"
-
-      - name: Upload build package
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-package-${{ github.sha }}
-          path: dist-${{ github.sha }}.tar.gz
-          retention-days: 30
-
-  # Stage 2: Deploy to Staging (Automatic)
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: build-and-package
-    if: |
-      github.ref == 'refs/heads/develop' ||
-      github.ref == 'refs/heads/main' ||
-      github.ref == 'refs/heads/master' ||
-      github.event.inputs.environment == 'staging'
-    environment:
-      name: staging
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-package-${{ github.sha }}
-          path: ./artifacts
-
-      - name: Extract build artifacts
-        run: |
-          tar -xzf ./artifacts/dist-${{ github.sha }}.tar.gz
-          echo "Build artifacts extracted to dist/"
-
-      - name: Install Netlify CLI
-        run: npm install -g netlify-cli
-
-      - name: Verify Netlify secrets
-        run: |
-          if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
-            echo "❌ Error: NETLIFY_AUTH_TOKEN secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.NETLIFY_SITE_ID }}" ]; then
-            echo "❌ Error: NETLIFY_SITE_ID secret is not set"
-            exit 1
-          fi
-          echo "✅ Netlify secrets verified"
-          echo "Site ID length: $(echo -n '${{ secrets.NETLIFY_SITE_ID }}' | wc -c)"
-
-      - name: Netlify token sanity check
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        run: |
-          echo "🔍 Netlify Token Sanity Check"
-          echo "=============================="
-          echo ""
-          echo "1. CLI Version:"
-          npx netlify-cli --version || true
-          echo ""
-          echo "2. Auth Status:"
-          npx netlify-cli status || true
-          echo ""
-          echo "3. Listing accessible sites via API:"
-          npx netlify-cli api listSites --data '{}' | head -n 20 || true
-          echo ""
-          echo "✅ Token sanity check complete"
-
-      - name: Confirm token can access this Site ID
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: |
-          echo "🔍 Verifying Site ID Access"
-          echo "============================"
-          echo "Site ID: ${NETLIFY_SITE_ID:0:10}..."
-          echo ""
-          echo "Checking if token can access this site:"
-          npx netlify-cli api getSite --data "{\"site_id\":\"$NETLIFY_SITE_ID\"}" || true
-          echo ""
-          echo "✅ Site ID access check complete"
-
-      - name: Draft deploy test (verify basic deploy works)
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: |
-          echo "🔍 Testing Draft Deploy (no --prod flag)"
-          echo "========================================"
-          if [ ! -d "dist" ]; then
-            echo "⚠️ dist directory not found, skipping draft deploy test"
-            exit 0
-          fi
-          echo "Attempting draft deploy to verify basic permissions..."
-          npx netlify-cli deploy --dir=dist --site="$NETLIFY_SITE_ID" --message="Draft deploy test" || echo "⚠️ Draft deploy test failed (this is diagnostic only)"
-          echo ""
-          echo "✅ Draft deploy test complete"
-
-      - name: Deploy to Netlify (Staging/Draft)
-        id: deploy-staging
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: |
-          echo "🚀 Deploying to Netlify Staging environment..."
-          echo "Build SHA: ${{ github.sha }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Site ID provided: ${NETLIFY_SITE_ID:0:10}..." # Show first 10 chars for debugging
-          
-          # Verify dist directory exists
-          if [ ! -d "dist" ]; then
-            echo "❌ Error: dist directory not found!"
-            exit 1
-          fi
-          
-          # Deploy using environment variables (CLI reads NETLIFY_AUTH_TOKEN from env)
-          # Use --site flag to specify site directly (avoids linking step)
-          npx netlify-cli deploy \
-            --dir=dist \
-            --site="$NETLIFY_SITE_ID" \
-            --message="Deploy from ${{ github.ref_name }} - ${{ github.sha }}"
-          
-          echo "✅ Deployment to Netlify staging completed"
-
-      - name: Deployment summary
+      - name: Build verification summary
         if: always()
         run: |
-          echo "### Staging Deployment Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Environment: Staging (Netlify Draft)" >> $GITHUB_STEP_SUMMARY
-          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Deployed by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "💡 **Note:** Check Netlify dashboard or workflow logs for deployment URL" >> $GITHUB_STEP_SUMMARY
-
-  # Stage 3: Deploy to Production (Manual approval required)
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [build-and-package, deploy-staging]  # Only deploy to prod after staging succeeds
-    if: |
-      github.ref == 'refs/heads/main' ||
-      github.ref == 'refs/heads/master' ||
-      github.event.inputs.environment == 'production'
-    environment:
-      name: production
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-package-${{ github.sha }}
-          path: ./artifacts
-
-      - name: Extract build artifacts
-        run: |
-          tar -xzf ./artifacts/dist-${{ github.sha }}.tar.gz
-          echo "Build artifacts extracted to dist/"
-
-      - name: Install Netlify CLI
-        run: npm install -g netlify-cli
-
-      - name: Verify Netlify secrets
-        run: |
-          if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
-            echo "❌ Error: NETLIFY_AUTH_TOKEN secret is not set"
-            exit 1
+          echo "### Build Verification Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "- ✅ Build completed successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "💡 **Note:** Netlify will automatically deploy this build via Git integration." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ Build failed. Please check the logs above." >> $GITHUB_STEP_SUMMARY
+            echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           fi
-          if [ -z "${{ secrets.NETLIFY_SITE_ID }}" ]; then
-            echo "❌ Error: NETLIFY_SITE_ID secret is not set"
-            exit 1
-          fi
-          echo "✅ Netlify secrets verified"
-          echo "Site ID length: $(echo -n '${{ secrets.NETLIFY_SITE_ID }}' | wc -c)"
-
-      - name: Netlify token sanity check
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        run: |
-          echo "🔍 Netlify Token Sanity Check (Production)"
-          echo "=========================================="
-          echo ""
-          echo "1. CLI Version:"
-          npx netlify-cli --version || true
-          echo ""
-          echo "2. Auth Status:"
-          npx netlify-cli status || true
-          echo ""
-          echo "3. Listing accessible sites via API:"
-          npx netlify-cli api listSites --data '{}' | head -n 20 || true
-          echo ""
-          echo "✅ Token sanity check complete"
-
-      - name: Confirm token can access this Site ID
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: |
-          echo "🔍 Verifying Site ID Access (Production)"
-          echo "========================================="
-          echo "Site ID: ${NETLIFY_SITE_ID:0:10}..."
-          echo ""
-          echo "Checking if token can access this site:"
-          npx netlify-cli api getSite --data "{\"site_id\":\"$NETLIFY_SITE_ID\"}" || true
-          echo ""
-          echo "✅ Site ID access check complete"
-
-      - name: Deploy to Netlify (Production)
-        id: deploy-production
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: |
-          echo "🚀 Deploying to Netlify Production environment..."
-          echo "Build SHA: ${{ github.sha }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Site ID provided: ${NETLIFY_SITE_ID:0:10}..." # Show first 10 chars for debugging
-          
-          # Verify dist directory exists
-          if [ ! -d "dist" ]; then
-            echo "❌ Error: dist directory not found!"
-            exit 1
-          fi
-          
-          # Deploy using environment variables (CLI reads NETLIFY_AUTH_TOKEN from env)
-          # Use --site flag to specify site directly (avoids linking step)
-          npx netlify-cli deploy --prod \
-            --dir=dist \
-            --site="$NETLIFY_SITE_ID" \
-            --message="Production deploy from ${{ github.ref_name }} - ${{ github.sha }}"
-          
-          echo "✅ Deployment to Netlify production completed"
-
-      - name: Deployment summary
-        if: always()
-        run: |
-          echo "### Production Deployment Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Environment: Production (Netlify)" >> $GITHUB_STEP_SUMMARY
-          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Deployed by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "💡 **Note:** Check Netlify dashboard or workflow logs for deployment URL" >> $GITHUB_STEP_SUMMARY
-
-  # Failure notification for deployment
-  notify-deployment-failure:
-    name: Notify Deployment Failure
-    runs-on: ubuntu-latest
-    needs: [build-and-package, deploy-staging, deploy-production]
-    if: failure()
-    steps:
-      - name: Create failure notification
-        run: |
-          echo "## ❌ Deployment Pipeline Failed" >> $GITHUB_STEP_SUMMARY
-          echo "The deployment pipeline has encountered an error." >> $GITHUB_STEP_SUMMARY
-          echo "- Workflow: ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Actor: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ **Action Required:** Please investigate and fix the deployment issue." >> $GITHUB_STEP_SUMMARY
-          echo "Check the workflow logs for detailed error information." >> $GITHUB_STEP_SUMMARY
-      
-      # Uncomment and configure if you want email/Slack notifications:
-      # - name: Send Slack notification
-      #   uses: 8398a7/action-slack@v3
-      #   if: failure()
-      #   with:
-      #     status: ${{ job.status }}
-      #     text: '🚨 DEPLOYMENT FAILED: ${{ github.ref_name }}'
-      #     webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  # Success notification
-  notify-deployment-success:
-    name: Notify Deployment Success
-    runs-on: ubuntu-latest
-    needs: [deploy-staging, deploy-production]
-    if: success() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
-    steps:
-      - name: Create success notification
-        run: |
-          echo "## ✅ Deployment Pipeline Succeeded" >> $GITHUB_STEP_SUMMARY
-          echo "The application has been successfully deployed." >> $GITHUB_STEP_SUMMARY
-          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Deployed by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
