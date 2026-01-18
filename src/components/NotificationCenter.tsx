@@ -16,7 +16,7 @@ export function NotificationCenter() {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const _getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high": return "border-red-200 bg-red-50";
       case "medium": return "border-yellow-200 bg-yellow-50";
@@ -59,7 +59,7 @@ export function NotificationCenter() {
               {notifications.map((notification) => (
                 <div
                   key={notification._id}
-                  onClick={() => handleNotificationClick(notification._id)}
+                  onClick={() => { void handleNotificationClick(notification._id); }}
                   className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
                     !notification.isRead ? "bg-blue-50" : ""
                   }`}

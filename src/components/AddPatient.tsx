@@ -99,7 +99,7 @@ export function AddPatient() {
 
           {selectedPatient && (
             <button
-              onClick={handleAddPatient}
+              onClick={() => { void handleAddPatient(); }}
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-4 rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >

@@ -10,7 +10,7 @@ export function TodaysReminders() {
     try {
       await completeReminder({ reminderId: reminderId as any });
       toast.success("Great job! Reminder completed! 🎉");
-    } catch (error) {
+    } catch {
       toast.error("Failed to mark reminder as complete");
     }
   };
@@ -116,7 +116,7 @@ export function TodaysReminders() {
                   )}
                 </div>
                 <button
-                  onClick={() => handleComplete(reminder._id)}
+                  onClick={() => { void handleComplete(reminder._id); }}
                   className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border border-gray-300 font-medium transition-all text-sm"
                 >
                   Mark Done

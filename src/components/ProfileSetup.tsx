@@ -40,7 +40,7 @@ export function ProfileSetup() {
         <p className="text-gray-600">Let's set up your profile to get started</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(e); }} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
             I am a:

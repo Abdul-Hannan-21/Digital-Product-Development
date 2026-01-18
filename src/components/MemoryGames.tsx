@@ -28,7 +28,7 @@ export function MemoryGames() {
       toast.success(`Great job! You scored ${score}/${maxScore}! 🎉`);
       setSelectedGame(null);
       setGameInProgress(false);
-    } catch (error) {
+    } catch {
       toast.error("Failed to save score");
     }
   };
@@ -49,7 +49,7 @@ export function MemoryGames() {
       return (
         <FaceNameGame
           game={game}
-          onComplete={handleGameComplete}
+          onComplete={(score, maxScore) => { void handleGameComplete(score, maxScore); }}
           onExit={() => {
             setSelectedGame(null);
             setGameInProgress(false);
@@ -60,7 +60,7 @@ export function MemoryGames() {
       return (
         <WordRecallGame
           game={game}
-          onComplete={handleGameComplete}
+          onComplete={(score, maxScore) => { void handleGameComplete(score, maxScore); }}
           onExit={() => {
             setSelectedGame(null);
             setGameInProgress(false);

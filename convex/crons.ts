@@ -1,6 +1,6 @@
 import { cronJobs } from "convex/server";
 import { internal } from "./_generated/api";
-import { internalAction, internalMutation, internalQuery } from "./_generated/server";
+import { internalAction, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 
 // Check for missed reminders and send notifications

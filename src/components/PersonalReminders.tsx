@@ -97,7 +97,7 @@ export function PersonalReminders() {
         <div className="bg-white rounded-xl border border-purple-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Create Personal Reminder</h3>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(e); }} className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                 What do you want to remember? *
@@ -275,13 +275,15 @@ export function PersonalReminders() {
                 </div>
                 {!reminder.isCompleted && (
                   <button
-                    onClick={async () => {
-                      try {
-                        await completeReminder({ reminderId: reminder._id });
-                        toast.success("Reminder completed! 🎉");
-                      } catch (error) {
-                        toast.error("Failed to complete reminder");
-                      }
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          await completeReminder({ reminderId: reminder._id });
+                          toast.success("Reminder completed! 🎉");
+                        } catch {
+                          toast.error("Failed to complete reminder");
+                        }
+                      })();
                     }}
                     className="bg-white hover:bg-purple-50 text-purple-700 px-4 py-2 rounded-lg border border-purple-300 font-medium transition-all text-sm"
                   >

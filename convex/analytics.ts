@@ -126,7 +126,7 @@ export const getPatientNotifications = query({
 
     const notifications = [];
     const now = Date.now();
-    const oneDayAgo = now - (24 * 60 * 60 * 1000);
+    const _oneDayAgo = now - (24 * 60 * 60 * 1000);
     const threeDaysAgo = now - (3 * 24 * 60 * 60 * 1000);
 
     // Check for missed reminders

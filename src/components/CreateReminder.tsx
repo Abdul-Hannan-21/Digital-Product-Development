@@ -86,7 +86,7 @@ export function CreateReminder({ patients }: CreateReminderProps) {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(e); }} className="space-y-6">
           <div>
             <label htmlFor="patient" className="block text-sm font-medium text-gray-700 mb-2">
               Select Patient *
