@@ -124,13 +124,21 @@ jobs:
           echo "🚀 Deploying to Netlify Staging environment..."
           echo "Build SHA: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
+          echo "Site ID provided: ${NETLIFY_SITE_ID:0:10}..." # Show first 10 chars for debugging
           
-          # Use explicit auth and site flags to avoid interactive prompts
-          netlify deploy --dir=dist \
-            --auth="$NETLIFY_AUTH_TOKEN" \
+          # Verify dist directory exists
+          if [ ! -d "dist" ]; then
+            echo "❌ Error: dist directory not found!"
+            exit 1
+          fi
+          
+          # Deploy using environment variables (CLI reads NETLIFY_AUTH_TOKEN from env)
+          # Use --site flag to specify site directly (avoids linking step)
+          netlify deploy \
+            --dir=dist \
             --site="$NETLIFY_SITE_ID" \
             --message="Deploy from ${{ github.ref_name }} - ${{ github.sha }}" \
-            --json
+            --auth="$NETLIFY_AUTH_TOKEN"
           
           echo "✅ Deployment to Netlify staging completed"
 
@@ -205,13 +213,21 @@ jobs:
           echo "🚀 Deploying to Netlify Production environment..."
           echo "Build SHA: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
+          echo "Site ID provided: ${NETLIFY_SITE_ID:0:10}..." # Show first 10 chars for debugging
           
-          # Use explicit auth and site flags to avoid interactive prompts
-          netlify deploy --prod --dir=dist \
-            --auth="$NETLIFY_AUTH_TOKEN" \
+          # Verify dist directory exists
+          if [ ! -d "dist" ]; then
+            echo "❌ Error: dist directory not found!"
+            exit 1
+          fi
+          
+          # Deploy using environment variables (CLI reads NETLIFY_AUTH_TOKEN from env)
+          # Use --site flag to specify site directly (avoids linking step)
+          netlify deploy --prod \
+            --dir=dist \
             --site="$NETLIFY_SITE_ID" \
             --message="Production deploy from ${{ github.ref_name }} - ${{ github.sha }}" \
-            --json
+            --auth="$NETLIFY_AUTH_TOKEN"
           
           echo "✅ Deployment to Netlify production completed"
 
