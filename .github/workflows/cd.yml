@@ -198,16 +198,23 @@ jobs:
           fi
           echo "✅ Netlify secrets verified"
 
+      - name: Link Netlify site
+        run: |
+          echo "Linking Netlify site..."
+          netlify link --id ${{ secrets.NETLIFY_SITE_ID }} \
+            --auth=${{ secrets.NETLIFY_AUTH_TOKEN }}
+        continue-on-error: false
+
       - name: Deploy to Netlify (Production)
         id: deploy-production
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
           echo "🚀 Deploying to Netlify Production environment..."
           echo "Build SHA: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
-          echo "Site ID: ${{ secrets.NETLIFY_SITE_ID }}"
           
           netlify deploy --prod --dir=dist \
-            --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} \
             --site=${{ secrets.NETLIFY_SITE_ID }} \
             --message="Production deploy from ${{ github.ref_name }} - ${{ github.sha }}"
           
