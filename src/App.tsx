@@ -18,12 +18,20 @@ export default function App() {
           </div>
           <h2 className="text-xl font-semibold text-gray-800">CareMate 2.0</h2>
         </div>
-        <Authenticated>
-          <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
+          <a
+            href="/presentation.html"
+            target="_blank"
+            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all shadow-sm hover:shadow-md text-sm font-medium"
+            rel="noopener noreferrer"
+          >
+            📊 Presentation
+          </a>
+          <Authenticated>
             <NotificationCenter />
             <SignOutButton />
-          </div>
-        </Authenticated>
+          </Authenticated>
+        </div>
       </header>
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-6xl mx-auto">
