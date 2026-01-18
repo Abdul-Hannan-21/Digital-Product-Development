@@ -16,7 +16,7 @@ export default function App() {
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">M</span>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">MemoryMate 2.0</h2>
+          <h2 className="text-xl font-semibold text-gray-800">CareMate 2.0</h2>
         </div>
         <Authenticated>
           <div className="flex items-center gap-4">
@@ -52,7 +52,7 @@ function Content() {
       <Unauthenticated>
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            Welcome to our <span className="text-blue-600">MemoryMate 2.0</span>
+            Welcome to our <span className="text-blue-600">Care Mate 2.0</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             Supporting memory care with gentle reminders, engaging games, and caregiver connection
