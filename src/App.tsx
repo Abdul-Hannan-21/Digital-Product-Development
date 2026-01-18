@@ -52,7 +52,7 @@ function Content() {
       <Unauthenticated>
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            Welcome to <span className="text-blue-600">MemoryMate</span>
+            Welcome to <span className="text-blue-600">MemoryMate 2</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             Supporting memory care with gentle reminders, engaging games, and caregiver connection
