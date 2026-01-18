@@ -7,7 +7,17 @@
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "vite --open",
     "dev:backend": "convex dev",
-    "lint": "tsc -p convex -noEmit --pretty false && tsc -p . -noEmit --pretty false && convex dev --once && vite build"
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "type-check": "tsc -p . --noEmit && tsc -p convex --noEmit",
+    "type-check:frontend": "tsc -p . --noEmit",
+    "type-check:backend": "tsc -p convex --noEmit",
+    "build": "vite build",
+    "build:convex": "convex dev --once",
+    "build:all": "npm run build:convex && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "test:watch": "echo \"Error: no test specified\" && exit 0",
+    "ci": "npm run lint && npm run type-check && npm run build:all"
   },
   "dependencies": {
     "@convex-dev/auth": "^0.0.80",
