@@ -97,12 +97,11 @@ jobs:
           echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- Triggered by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
 
-  # Stage 4: Test (Placeholder for when tests are added)
+  # Stage 4: Run Tests
   test:
     name: Run Tests
     runs-on: ubuntu-latest
     needs: [build]  # Run tests after successful build
-    if: false  # Disabled until test framework is set up
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
