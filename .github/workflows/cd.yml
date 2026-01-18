@@ -115,18 +115,53 @@ jobs:
           echo "✅ Netlify secrets verified"
           echo "Site ID length: $(echo -n '${{ secrets.NETLIFY_SITE_ID }}' | wc -c)"
 
-      - name: Netlify authentication check
+      - name: Netlify token sanity check
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
-          echo "🔍 Checking Netlify authentication and site access..."
-          echo "Checking auth status..."
+          echo "🔍 Netlify Token Sanity Check"
+          echo "=============================="
+          echo ""
+          echo "1. CLI Version:"
+          npx netlify-cli --version || true
+          echo ""
+          echo "2. Auth Status:"
           npx netlify-cli status || true
           echo ""
-          echo "Listing accessible sites..."
-          npx netlify-cli sites:list || true
+          echo "3. Listing accessible sites via API:"
+          npx netlify-cli api listSites --data '{}' | head -n 20 || true
           echo ""
-          echo "✅ Authentication check complete"
+          echo "✅ Token sanity check complete"
+
+      - name: Confirm token can access this Site ID
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          echo "🔍 Verifying Site ID Access"
+          echo "============================"
+          echo "Site ID: ${NETLIFY_SITE_ID:0:10}..."
+          echo ""
+          echo "Checking if token can access this site:"
+          npx netlify-cli api getSite --data "{\"site_id\":\"$NETLIFY_SITE_ID\"}" || true
+          echo ""
+          echo "✅ Site ID access check complete"
+
+      - name: Draft deploy test (verify basic deploy works)
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          echo "🔍 Testing Draft Deploy (no --prod flag)"
+          echo "========================================"
+          if [ ! -d "dist" ]; then
+            echo "⚠️ dist directory not found, skipping draft deploy test"
+            exit 0
+          fi
+          echo "Attempting draft deploy to verify basic permissions..."
+          npx netlify-cli deploy --dir=dist --site="$NETLIFY_SITE_ID" --message="Draft deploy test" || echo "⚠️ Draft deploy test failed (this is diagnostic only)"
+          echo ""
+          echo "✅ Draft deploy test complete"
 
       - name: Deploy to Netlify (Staging/Draft)
         id: deploy-staging
