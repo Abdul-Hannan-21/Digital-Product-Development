@@ -251,6 +251,38 @@ jobs:
           echo "✅ Netlify secrets verified"
           echo "Site ID length: $(echo -n '${{ secrets.NETLIFY_SITE_ID }}' | wc -c)"
 
+      - name: Netlify token sanity check
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          echo "🔍 Netlify Token Sanity Check (Production)"
+          echo "=========================================="
+          echo ""
+          echo "1. CLI Version:"
+          npx netlify-cli --version || true
+          echo ""
+          echo "2. Auth Status:"
+          npx netlify-cli status || true
+          echo ""
+          echo "3. Listing accessible sites via API:"
+          npx netlify-cli api listSites --data '{}' | head -n 20 || true
+          echo ""
+          echo "✅ Token sanity check complete"
+
+      - name: Confirm token can access this Site ID
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          echo "🔍 Verifying Site ID Access (Production)"
+          echo "========================================="
+          echo "Site ID: ${NETLIFY_SITE_ID:0:10}..."
+          echo ""
+          echo "Checking if token can access this site:"
+          npx netlify-cli api getSite --data "{\"site_id\":\"$NETLIFY_SITE_ID\"}" || true
+          echo ""
+          echo "✅ Site ID access check complete"
+
       - name: Deploy to Netlify (Production)
         id: deploy-production
         env:
