@@ -1,6 +1,6 @@
 [build]
-  # Build command: Only build frontend (Convex backend is deployed separately)
-  command = "npm run build"
+  # Install dependencies first, then build frontend (Convex backend is deployed separately)
+  command = "npm ci && npm run build"
   
   # Directory to publish (Vite output)
   publish = "dist"
