@@ -1,6 +1,8 @@
 [build]
   # Install dependencies first, then build frontend (Convex backend is deployed separately)
-  command = "npm ci && npm run build"
+  # Use npm install instead of npm ci to ensure devDependencies are installed
+  # (npm ci can skip devDependencies if NODE_ENV=production is set)
+  command = "npm install && npm run build"
   
   # Directory to publish (Vite output)
   publish = "dist"
@@ -8,7 +10,8 @@
   # Node.js version
   [build.environment]
     NODE_VERSION = "20"
-    NODE_ENV = "production"
+    # Don't set NODE_ENV=production here - it causes npm ci to skip devDependencies
+    # NODE_ENV will be set to production during the build command itself
 
 # Redirect all routes to index.html for SPA routing
 [[redirects]]
