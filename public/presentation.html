@@ -37,24 +37,18 @@
             background: white;
             padding: 80px;
             overflow-y: auto;
-            animation: slideIn 0.5s ease-in-out;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
 
         .slide.active {
             display: block;
             z-index: 1;
+            opacity: 1;
+            transform: translateX(0);
         }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
 
         h1 {
             font-size: 4em;
@@ -979,16 +973,28 @@ Total CI time: ~4-5 minutes</div>
         document.getElementById('total-slides').textContent = totalSlides;
 
         function showSlide(n) {
+            // Prevent wrapping - stay on first/last slide
             if (n >= totalSlides) {
-                currentSlide = 0;
+                return; // Don't go past last slide
             } else if (n < 0) {
-                currentSlide = totalSlides - 1;
-            } else {
-                currentSlide = n;
+                return; // Don't go before first slide
             }
-
-            slides.forEach(slide => slide.classList.remove('active'));
-            slides[currentSlide].classList.add('active');
+            
+            // Hide all slides immediately
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+                slide.style.display = 'none';
+            });
+            
+            // Update current slide
+            currentSlide = n;
+            
+            // Show new slide
+            slides[currentSlide].style.display = 'block';
+            // Use requestAnimationFrame to ensure display is set before adding active class
+            requestAnimationFrame(() => {
+                slides[currentSlide].classList.add('active');
+            });
 
             document.getElementById('current-slide').textContent = currentSlide + 1;
 
