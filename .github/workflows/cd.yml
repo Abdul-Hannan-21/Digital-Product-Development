@@ -113,6 +113,7 @@ jobs:
             exit 1
           fi
           echo "✅ Netlify secrets verified"
+          echo "Site ID length: $(echo -n '${{ secrets.NETLIFY_SITE_ID }}' | wc -c)"
 
       - name: Deploy to Netlify (Staging/Draft)
         id: deploy-staging
@@ -124,10 +125,12 @@ jobs:
           echo "Build SHA: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
           
+          # Use explicit auth and site flags to avoid interactive prompts
           netlify deploy --dir=dist \
-            --auth=$NETLIFY_AUTH_TOKEN \
-            --site=$NETLIFY_SITE_ID \
-            --message="Deploy from ${{ github.ref_name }} - ${{ github.sha }}"
+            --auth="$NETLIFY_AUTH_TOKEN" \
+            --site="$NETLIFY_SITE_ID" \
+            --message="Deploy from ${{ github.ref_name }} - ${{ github.sha }}" \
+            --json
           
           echo "✅ Deployment to Netlify staging completed"
 
@@ -191,6 +194,7 @@ jobs:
             exit 1
           fi
           echo "✅ Netlify secrets verified"
+          echo "Site ID length: $(echo -n '${{ secrets.NETLIFY_SITE_ID }}' | wc -c)"
 
       - name: Deploy to Netlify (Production)
         id: deploy-production
@@ -202,10 +206,12 @@ jobs:
           echo "Build SHA: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
           
+          # Use explicit auth and site flags to avoid interactive prompts
           netlify deploy --prod --dir=dist \
-            --auth=$NETLIFY_AUTH_TOKEN \
-            --site=$NETLIFY_SITE_ID \
-            --message="Production deploy from ${{ github.ref_name }} - ${{ github.sha }}"
+            --auth="$NETLIFY_AUTH_TOKEN" \
+            --site="$NETLIFY_SITE_ID" \
+            --message="Production deploy from ${{ github.ref_name }} - ${{ github.sha }}" \
+            --json
           
           echo "✅ Deployment to Netlify production completed"
 
