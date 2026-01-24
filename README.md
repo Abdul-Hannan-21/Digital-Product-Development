@@ -2,8 +2,7 @@
 
 *MemoryMate* is a digital memory companion for early-stage dementia patients and their caregivers. It combines cognitive support, daily structure, and emotional connection in a respectful, accessible web app.
 
-🔗 Live App: [https://focused-meadowlark-488.convex.app](https://memorymate2.netlify.app/)
-https://keen-trifle-8c918c.netlify.app/
+🔗 Live App: [https://focused-meadowlark-488.convex.app]
 
 ---
 
